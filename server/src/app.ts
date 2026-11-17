@@ -6,6 +6,7 @@ import {sendError} from './http-errors.js';
 import {createLogger, logRequests, type Logger} from './logger.js';
 import {requireAdmin} from './middleware/auth.js';
 import {loginRouter} from './routes/auth.js';
+import {healthRouter, livenessRouter} from './routes/health.js';
 import {spaRouter} from './web.js';
 
 /**
@@ -22,8 +23,10 @@ export function createApp(
   app.use(helmet({contentSecurityPolicy: false}));
   app.use(express.json({limit: '64kb'}));
   app.use(logRequests(logger));
+  app.use(livenessRouter());
   app.use('/panel-api', loginRouter(deps));
   app.use('/panel-api', requireAdmin());
+  app.use('/panel-api', healthRouter(deps));
   const spa = spaRouter(deps.config.webRoot, logger);
   if (spa) {
     app.use(spa);
