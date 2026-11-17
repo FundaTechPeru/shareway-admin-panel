@@ -1,7 +1,7 @@
 import request from 'supertest';
 import {describe, expect, it} from 'vitest';
 import {loadConfig} from '../src/config.js';
-import {testApp} from './helpers.js';
+import {testPanel} from './helpers.js';
 
 describe('configuration', () => {
   it('reads the defaults of a local run', () => {
@@ -36,14 +36,16 @@ describe('configuration', () => {
 
 describe('application', () => {
   it('answers an unknown path with the error body of the platform', async () => {
-    const response = await request(testApp()).get('/panel-api/unknown');
+    const {app} = testPanel();
+
+    const response = await request(app).get('/unknown');
 
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject({
       status: 404,
       error: 'Not Found',
       message: 'Resource not found',
-      path: '/panel-api/unknown',
+      path: '/unknown',
       fieldErrors: [],
     });
   });
