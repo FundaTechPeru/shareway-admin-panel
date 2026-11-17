@@ -6,6 +6,7 @@ import {
   type AuditLogRepository,
 } from '../src/db/audit-log-repository.js';
 import {openDatabase} from '../src/db/database.js';
+import {createDependencies} from '../src/dependencies.js';
 import {GatewayClient} from '../src/gateway.js';
 
 export const GATEWAY_URL = 'https://gateway.shareway.test';
@@ -46,11 +47,10 @@ export function testPanel(
   const handler: GatewayHandler =
     options.gateway ?? (() => ({status: 404, body: {message: 'not stubbed'}}));
   const auditLog = new SqliteAuditLogRepository(openDatabase(':memory:'));
-  const deps = {
-    config,
+  const deps = createDependencies(config, {
     gateway: new GatewayClient(config, stubFetch(handler, calls)),
     auditLog,
-  };
+  });
   return {app: createApp(deps), config, auditLog, calls};
 }
 
