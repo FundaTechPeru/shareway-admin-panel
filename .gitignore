@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+out-tsc/
+.angular/
+server/public/
+data/
+*.db
+*.db-shm
+*.db-wal
+*.log
+.env
+.env.local
+.idea/
+.vscode/
