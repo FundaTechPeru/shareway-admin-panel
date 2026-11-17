@@ -1,3 +1,7 @@
+import {
+  createPendingDocumentsAdapter,
+  type PendingDocumentsAdapter,
+} from './adapters/pending-documents.js';
 import type {PanelConfig} from './config.js';
 import {
   SqliteAuditLogRepository,
@@ -11,12 +15,26 @@ export interface PanelDependencies {
   config: PanelConfig;
   gateway: GatewayClient;
   auditLog: AuditLogRepository;
+  pendingDocuments: PendingDocumentsAdapter;
 }
 
-export function createDependencies(config: PanelConfig): PanelDependencies {
+/**
+ * Wires the panel together. The adapters of the endpoints that do not exist yet are chosen here
+ * from the feature flags, so turning one on is a deployment setting and not a code change.
+ */
+export function createDependencies(
+  config: PanelConfig,
+  overrides: Partial<PanelDependencies> = {},
+): PanelDependencies {
+  const gateway = overrides.gateway ?? new GatewayClient(config);
   return {
     config,
-    gateway: new GatewayClient(config),
-    auditLog: new SqliteAuditLogRepository(openDatabase(config.dbFile)),
+    gateway,
+    auditLog:
+      overrides.auditLog ??
+      new SqliteAuditLogRepository(openDatabase(config.dbFile)),
+    pendingDocuments:
+      overrides.pendingDocuments ??
+      createPendingDocumentsAdapter(config, gateway),
   };
 }
