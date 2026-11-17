@@ -8,6 +8,7 @@ import {requireAdmin} from './middleware/auth.js';
 import {loginRouter} from './routes/auth.js';
 import {driverDocumentsRouter} from './routes/driver-documents.js';
 import {healthRouter, livenessRouter} from './routes/health.js';
+import {tripRecordsRouter} from './routes/trip-records.js';
 import {spaRouter} from './web.js';
 
 /**
@@ -29,6 +30,7 @@ export function createApp(
   app.use('/panel-api', requireAdmin());
   app.use('/panel-api', healthRouter(deps));
   app.use('/panel-api', driverDocumentsRouter(deps));
+  app.use('/panel-api', tripRecordsRouter(deps));
   const spa = spaRouter(deps.config.webRoot, logger);
   if (spa) {
     app.use(spa);
