@@ -1,0 +1,25 @@
+# Example of how the panel runs next to a gateway that is already up.
+# Copy it, point GATEWAY_URL at your gateway and run: docker compose up --build
+
+services:
+  panel:
+    build: .
+    image: shareway-admin-panel:0.1.0
+    ports:
+      - '8090:8090'
+    environment:
+      PORT: '8090'
+      GATEWAY_URL: 'http://host.docker.internal:8080'
+      DB_FILE: '/app/data/panel.db'
+      FEATURE_REAL_PENDING_DOCS: 'false'
+      FEATURE_REAL_TRIP_RECORDS: 'false'
+      LOG_LEVEL: 'info'
+    volumes:
+      # The audit trail of the lookups has to survive a restart of the container.
+      - panel-data:/app/data
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
+
+volumes:
+  panel-data:
