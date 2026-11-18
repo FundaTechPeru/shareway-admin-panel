@@ -1,0 +1,62 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Bitácora de consultas</h1>
+    <p>
+      Cada consulta al registro de viajes deja una línea. La bitácora solo se
+      lee: nadie puede editarla ni borrarla desde el panel.
+    </p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="downloading() || lines().length === 0"
+    (click)="download()"
+  >
+    {{ downloading() ? 'Exportando…' : 'Exportar CSV' }}
+  </button>
+</header>
+
+<form class="sw-card audit__filter" (ngSubmit)="load()">
+  <div class="sw-field">
+    <label for="from">Desde</label>
+    <input id="from" name="from" type="date" [(ngModel)]="period.from" />
+  </div>
+  <div class="sw-field">
+    <label for="to">Hasta</label>
+    <input id="to" name="to" type="date" [(ngModel)]="period.to" />
+  </div>
+  <button class="sw-button" type="submit" [disabled]="loading()">
+    {{ loading() ? 'Filtrando…' : 'Filtrar' }}
+  </button>
+</form>
+
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+}
+
+@if (lines().length === 0 && !loading()) {
+  <p class="sw-empty">No hay consultas registradas en ese periodo.</p>
+} @else {
+  <table class="sw-card sw-table">
+    <thead>
+      <tr>
+        <th scope="col">Fecha</th>
+        <th scope="col">Administrador</th>
+        <th scope="col">Búsqueda</th>
+        <th scope="col">Criterio</th>
+        <th scope="col">Referencia</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of lines(); track line.id) {
+        <tr>
+          <td>{{ formatDateTime(line.createdAt) }}</td>
+          <td>{{ line.adminEmail ?? line.adminId }}</td>
+          <td>{{ searchLabel(line.searchType) }}</td>
+          <td class="audit__criteria">{{ line.criteria }}</td>
+          <td>{{ line.reference }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

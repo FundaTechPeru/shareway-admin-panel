@@ -1,0 +1,54 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Servicios</h1>
+    <p>
+      Estado de la plataforma según el circuito que reporta el API Gateway.
+      @if (report()) {
+        <span>Última consulta: {{ formatTime(report()!.checkedAt) }}.</span>
+      }
+    </p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="loading()"
+    (click)="refresh()"
+  >
+    {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+  </button>
+</header>
+
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+}
+
+@if (report(); as platform) {
+  <div class="services">
+    <article class="sw-card services__card services__card--gateway">
+      <div class="services__head">
+        <h2>API Gateway</h2>
+        <span class="sw-badge sw-badge--{{ statusLabel(platform.gateway).badge }}">
+          {{ statusLabel(platform.gateway).text }}
+        </span>
+      </div>
+      <p class="sw-muted">
+        Puerta de entrada única. Si no responde, el panel no puede consultar
+        ningún servicio.
+      </p>
+    </article>
+
+    @for (service of platform.services; track service.name) {
+      <article class="sw-card services__card">
+        <div class="services__head">
+          <h2>{{ serviceLabel(service.name) }}</h2>
+          <span class="sw-badge sw-badge--{{ statusLabel(service.status).badge }}">
+            {{ statusLabel(service.status).text }}
+          </span>
+        </div>
+        <p class="sw-muted services__name">{{ service.name }}</p>
+      </article>
+    }
+  </div>
+} @else if (!loading()) {
+  <p class="sw-empty">Sin datos del estado de la plataforma.</p>
+}

@@ -1,0 +1,44 @@
+<div class="shell">
+  <aside class="shell__sidebar">
+    <div class="shell__brand">
+      <span class="shell__logo">ShareWay</span>
+      <span class="shell__brand-note">Panel de administración</span>
+    </div>
+
+    <nav class="shell__nav" aria-label="Secciones del panel">
+      @for (item of items; track item.label) {
+        @if (item.path) {
+          <a
+            class="shell__link"
+            [routerLink]="item.path"
+            routerLinkActive="shell__link--active"
+          >
+            <span class="shell__icon" aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+          </a>
+        } @else {
+          <span class="shell__link shell__link--soon" aria-disabled="true">
+            <span class="shell__icon" aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+            <small>próximamente</small>
+          </span>
+        }
+      }
+    </nav>
+
+    <div class="shell__user">
+      <span class="shell__avatar" aria-hidden="true">{{ initials() }}</span>
+      <span class="shell__user-data">
+        <strong>{{ admin()?.email }}</strong>
+        <small>Personal autorizado</small>
+      </span>
+      <button class="shell__signout" type="button" (click)="signOut()">
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="shell__content">
+    <router-outlet />
+  </main>
+</div>

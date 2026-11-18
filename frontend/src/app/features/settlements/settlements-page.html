@@ -1,0 +1,116 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Liquidaciones</h1>
+    <p>Pagos a los conductores según los viajes cerrados de cada periodo.</p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="loading()"
+    (click)="load()"
+  >
+    {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+  </button>
+</header>
+
+<div class="sw-tabs" role="tablist">
+  @for (option of tabs; track option.value) {
+    <button
+      class="sw-tab"
+      type="button"
+      role="tab"
+      [attr.aria-selected]="tab() === option.value"
+      (click)="show(option.value)"
+    >
+      {{ option.label }}
+    </button>
+  }
+</div>
+
+@if (notice()) {
+  <p class="sw-alert sw-alert--ok" role="status">{{ notice() }}</p>
+}
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+}
+
+@if (confirming(); as settlement) {
+  <div class="sw-alert sw-alert--info settlements__confirm" role="alert">
+    <span>
+      ¿Marcar como pagada la liquidación de
+      {{ settlement.driverName ?? settlement.id }} por
+      {{ formatMoney(settlement.amount, settlement.currency) }}?
+    </span>
+    <span class="settlements__confirm-actions">
+      <button
+        class="sw-button sw-button--small"
+        type="button"
+        [disabled]="working()"
+        (click)="markPaid()"
+      >
+        {{ working() ? 'Marcando…' : 'Sí, marcar como pagada' }}
+      </button>
+      <button
+        class="sw-button sw-button--ghost sw-button--small"
+        type="button"
+        [disabled]="working()"
+        (click)="cancel()"
+      >
+        Cancelar
+      </button>
+    </span>
+  </div>
+}
+
+@if (settlements().length === 0 && !loading()) {
+  <p class="sw-empty">No hay liquidaciones en esta vista.</p>
+} @else {
+  <table class="sw-card sw-table">
+    <thead>
+      <tr>
+        <th scope="col">Conductor</th>
+        <th scope="col">Periodo</th>
+        <th scope="col">Viajes</th>
+        <th scope="col">Monto</th>
+        <th scope="col">Estado</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (settlement of settlements(); track settlement.id) {
+        <tr>
+          <td>{{ settlement.driverName ?? settlement.driverId ?? '—' }}</td>
+          <td>
+            {{ formatDate(settlement.periodStart) }} —
+            {{ formatDate(settlement.periodEnd) }}
+          </td>
+          <td>{{ settlement.trips ?? '—' }}</td>
+          <td>{{ formatMoney(settlement.amount, settlement.currency) }}</td>
+          <td>
+            <span
+              class="sw-badge"
+              [class.sw-badge--ok]="settlement.status === 'PAID'"
+              [class.sw-badge--warn]="settlement.status !== 'PAID'"
+            >
+              {{ statusLabel(settlement.status) }}
+            </span>
+          </td>
+          <td>
+            @if (settlement.status !== 'PAID') {
+              <button
+                class="sw-button sw-button--small"
+                type="button"
+                [disabled]="working()"
+                (click)="ask(settlement)"
+              >
+                Marcar como pagada
+              </button>
+            } @else {
+              <span class="sw-muted">{{ formatDate(settlement.paidAt) }}</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
