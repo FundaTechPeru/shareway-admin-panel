@@ -40,6 +40,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'liquidaciones',
+        title: 'Liquidaciones · ShareWay',
+        loadComponent: () =>
+          import('./features/settlements/settlements-page').then(
+            module => module.SettlementsPage,
+          ),
+      },
+      {
         path: 'servicios',
         title: 'Servicios · ShareWay',
         loadComponent: () =>
