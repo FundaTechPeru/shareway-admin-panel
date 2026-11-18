@@ -1,0 +1,160 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.shell__sidebar {
+  width: var(--sw-sidebar-width);
+  flex: 0 0 var(--sw-sidebar-width);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px;
+  background: var(--sw-dark);
+  color: #e8f3f6;
+}
+
+.shell__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.shell__logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.shell__brand-note {
+  font-size: 0.78rem;
+  color: #9dc3cd;
+}
+
+.shell__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.shell__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: var(--sw-radius);
+  color: #d7e9ee;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.shell__link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.shell__link--active {
+  background: var(--sw-primary);
+  color: #fff;
+  font-weight: 500;
+}
+
+.shell__link--soon {
+  color: #7fa3ae;
+  cursor: not-allowed;
+}
+
+.shell__link--soon:hover {
+  background: transparent;
+}
+
+.shell__link--soon small {
+  margin-left: auto;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.shell__icon {
+  width: 20px;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.shell__user {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 10px;
+  align-items: center;
+  padding: 12px 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.shell__avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--sw-accent);
+  color: #3d2600;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.shell__user-data {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.shell__user-data strong {
+  font-size: 0.85rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell__user-data small {
+  font-size: 0.72rem;
+  color: #9dc3cd;
+}
+
+.shell__signout {
+  grid-column: 1 / -1;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: var(--sw-radius-pill);
+  background: transparent;
+  color: #e8f3f6;
+  font: inherit;
+  cursor: pointer;
+}
+
+.shell__signout:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.shell__content {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 32px 48px;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .shell__sidebar {
+    width: 100%;
+    flex: none;
+  }
+
+  .shell__content {
+    padding: 20px;
+  }
+}
