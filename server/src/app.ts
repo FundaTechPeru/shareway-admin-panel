@@ -6,6 +6,7 @@ import {sendError} from './http-errors.js';
 import {createLogger, logRequests, type Logger} from './logger.js';
 import {requireAdmin} from './middleware/auth.js';
 import {loginRouter} from './routes/auth.js';
+import {auditLogRouter} from './routes/audit-log.js';
 import {driverDocumentsRouter} from './routes/driver-documents.js';
 import {healthRouter, livenessRouter} from './routes/health.js';
 import {tripRecordsRouter} from './routes/trip-records.js';
@@ -31,6 +32,7 @@ export function createApp(
   app.use('/panel-api', healthRouter(deps));
   app.use('/panel-api', driverDocumentsRouter(deps));
   app.use('/panel-api', tripRecordsRouter(deps));
+  app.use('/panel-api', auditLogRouter(deps));
   const spa = spaRouter(deps.config.webRoot, logger);
   if (spa) {
     app.use(spa);
