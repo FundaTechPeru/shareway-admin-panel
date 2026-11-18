@@ -1,0 +1,124 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Verificación de conductores</h1>
+    <p>
+      Documentos en espera de revisión.
+      @if (source() === 'mock') {
+        <span class="sw-badge sw-badge--idle">Datos de ejemplo</span>
+      }
+    </p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="loading()"
+    (click)="load()"
+  >
+    {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+  </button>
+</header>
+
+@if (notice()) {
+  <p class="sw-alert sw-alert--ok" role="status">{{ notice() }}</p>
+}
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+}
+
+<div class="drivers">
+  <section class="sw-card drivers__list" aria-label="Documentos pendientes">
+    @if (documents().length === 0 && !loading()) {
+      <p class="sw-empty">No hay documentos pendientes de revisión.</p>
+    }
+    @for (document of documents(); track document.id) {
+      <button
+        class="drivers__row"
+        type="button"
+        [class.drivers__row--active]="document.id === selectedId()"
+        (click)="select(document)"
+      >
+        <span class="drivers__driver">{{ document.driver.name }}</span>
+        <span class="sw-muted">{{ documentLabel(document.type) }}</span>
+        <span class="sw-muted drivers__when">
+          {{ formatDateTime(document.submittedAt) }}
+        </span>
+      </button>
+    }
+  </section>
+
+  <section class="sw-card drivers__detail" aria-label="Documento seleccionado">
+    @if (selected(); as document) {
+      <h2>{{ documentLabel(document.type) }}</h2>
+      <dl class="drivers__data">
+        <dt>Conductor</dt>
+        <dd>{{ document.driver.name }}</dd>
+        <dt>Correo</dt>
+        <dd>{{ document.driver.email }}</dd>
+        @if (document.driver.phone) {
+          <dt>Teléfono</dt>
+          <dd>{{ document.driver.phone }}</dd>
+        }
+        @if (document.driver.licenseNumber) {
+          <dt>Licencia</dt>
+          <dd>{{ document.driver.licenseNumber }}</dd>
+        }
+        <dt>Archivo</dt>
+        <dd>{{ document.fileName }}</dd>
+        <dt>Enviado</dt>
+        <dd>{{ formatDateTime(document.submittedAt) }}</dd>
+      </dl>
+
+      @if (askingReason()) {
+        <div class="sw-field">
+          <label for="reason">Motivo del rechazo</label>
+          <textarea
+            id="reason"
+            name="reason"
+            rows="3"
+            [(ngModel)]="reason"
+            placeholder="Explica qué debe corregir el conductor"
+          ></textarea>
+        </div>
+        <div class="drivers__actions">
+          <button
+            class="sw-button sw-button--danger"
+            type="button"
+            [disabled]="working()"
+            (click)="reject()"
+          >
+            Confirmar rechazo
+          </button>
+          <button
+            class="sw-button sw-button--ghost"
+            type="button"
+            [disabled]="working()"
+            (click)="cancelReason()"
+          >
+            Cancelar
+          </button>
+        </div>
+      } @else {
+        <div class="drivers__actions">
+          <button
+            class="sw-button"
+            type="button"
+            [disabled]="working()"
+            (click)="approve()"
+          >
+            Aprobar
+          </button>
+          <button
+            class="sw-button sw-button--danger"
+            type="button"
+            [disabled]="working()"
+            (click)="askReason()"
+          >
+            Rechazar
+          </button>
+        </div>
+      }
+    } @else {
+      <p class="sw-empty">Elige un documento de la lista para revisarlo.</p>
+    }
+  </section>
+</div>

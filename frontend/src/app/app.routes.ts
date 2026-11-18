@@ -16,6 +16,14 @@ export const routes: Routes = [
     canActivate: [signedInGuard],
     children: [
       {
+        path: 'conductores',
+        title: 'Verificación de conductores · ShareWay',
+        loadComponent: () =>
+          import('./features/drivers/drivers-page').then(
+            module => module.DriversPage,
+          ),
+      },
+      {
         path: 'servicios',
         title: 'Servicios · ShareWay',
         loadComponent: () =>
