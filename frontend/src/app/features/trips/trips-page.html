@@ -1,0 +1,169 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Registro de viajes</h1>
+    <p>
+      Consulta el registro de un viaje cerrado.
+      @if (source() === 'mock') {
+        <span class="sw-badge sw-badge--idle">Datos de ejemplo</span>
+      }
+    </p>
+  </div>
+</header>
+
+<form class="sw-card trips__form" (ngSubmit)="search()">
+  <div class="sw-field">
+    <label for="reference">Referencia del requerimiento</label>
+    <input
+      id="reference"
+      name="reference"
+      required
+      [(ngModel)]="form.reference"
+      placeholder="Caso, ticket u oficio que justifica la consulta"
+    />
+    <small>Obligatoria. Queda guardada en la bitácora junto a tu usuario.</small>
+  </div>
+
+  <div class="trips__criteria">
+    <div class="sw-field">
+      <label for="criterion">Buscar por</label>
+      <select id="criterion" name="criterion" [(ngModel)]="form.criterion">
+        @for (option of options; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="sw-field">
+      <label for="value">Identificador</label>
+      <input
+        id="value"
+        name="value"
+        required
+        [(ngModel)]="form.value"
+        [placeholder]="placeholder"
+      />
+    </div>
+  </div>
+
+  <button class="sw-button" type="submit" [disabled]="searching()">
+    {{ searching() ? 'Buscando…' : 'Buscar' }}
+  </button>
+</form>
+
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+}
+
+@if (detail(); as record) {
+  <section class="sw-card trips__detail" aria-label="Detalle del viaje">
+    <header class="trips__detail-head">
+      <h2>Viaje {{ record.tripId }}</h2>
+      <button class="sw-button sw-button--ghost" type="button" (click)="close()">
+        Volver a los resultados
+      </button>
+    </header>
+
+    <div class="trips__blocks">
+      <div>
+        <h3>Conductor</h3>
+        <p>{{ record.driver.name }}</p>
+        @if (record.driver.licenseNumber) {
+          <p class="sw-muted">Licencia {{ record.driver.licenseNumber }}</p>
+        }
+      </div>
+      <div>
+        <h3>Vehículo</h3>
+        <p>{{ record.vehicle.plate }}</p>
+        <p class="sw-muted">
+          {{ record.vehicle.brand }} {{ record.vehicle.model }} ·
+          {{ record.vehicle.color }} · {{ record.vehicle.seats }} asientos
+        </p>
+      </div>
+      <div>
+        <h3>Ruta</h3>
+        <p>{{ record.route.origin }} → {{ record.route.destination }}</p>
+        <p class="sw-muted">
+          Salida {{ formatDateTime(record.route.departedAt) }} · Llegada
+          {{ formatTime(record.route.arrivedAt) }}
+        </p>
+      </div>
+    </div>
+
+    <h3>Paradas</h3>
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Parada</th>
+          <th scope="col">Programada</th>
+          <th scope="col">Llegada</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (stop of record.stops; track stop.name) {
+          <tr>
+            <td>{{ stop.name }}</td>
+            <td>{{ formatTime(stop.scheduledAt) }}</td>
+            <td>{{ formatTime(stop.arrivedAt) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <h3>Pasajeros</h3>
+    <table class="sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Pasajero</th>
+          <th scope="col">Parada</th>
+          <th scope="col">Abordó</th>
+          <th scope="col">Validación</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (passenger of record.passengers; track passenger.passengerId) {
+          <tr>
+            <td>{{ passenger.name }}</td>
+            <td>{{ passenger.stop }}</td>
+            <td>{{ formatTime(passenger.boardedAt) }}</td>
+            <td>{{ passenger.validation }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+} @else if (records(); as found) {
+  @if (found.length === 0) {
+    <p class="sw-empty">Ningún viaje coincide con esa búsqueda.</p>
+  } @else {
+    <table class="sw-card sw-table">
+      <thead>
+        <tr>
+          <th scope="col">Viaje</th>
+          <th scope="col">Conductor</th>
+          <th scope="col">Ruta</th>
+          <th scope="col">Cierre</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (record of found; track record.id) {
+          <tr>
+            <td class="trips__id">{{ record.tripId }}</td>
+            <td>{{ record.driver.name }}</td>
+            <td>{{ record.route.origin }} → {{ record.route.destination }}</td>
+            <td>{{ formatDateTime(record.closedAt) }}</td>
+            <td>
+              <button
+                class="sw-button sw-button--ghost sw-button--small"
+                type="button"
+                [disabled]="searching()"
+                (click)="open(record)"
+              >
+                Ver detalle
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}

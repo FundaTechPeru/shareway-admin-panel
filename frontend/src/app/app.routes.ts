@@ -24,6 +24,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'registro',
+        title: 'Registro de viajes · ShareWay',
+        loadComponent: () =>
+          import('./features/trips/trips-page').then(
+            module => module.TripsPage,
+          ),
+      },
+      {
         path: 'servicios',
         title: 'Servicios · ShareWay',
         loadComponent: () =>
