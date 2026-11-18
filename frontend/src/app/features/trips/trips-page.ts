@@ -1,5 +1,6 @@
 import {Component, inject, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {RouterLink} from '@angular/router';
 import {formatDateTime, formatTime} from '../../core/format';
 import type {
   TripRecord,
@@ -23,7 +24,7 @@ interface CriterionOption {
  */
 @Component({
   selector: 'app-trips-page',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './trips-page.html',
   styleUrl: './trips-page.css',
 })

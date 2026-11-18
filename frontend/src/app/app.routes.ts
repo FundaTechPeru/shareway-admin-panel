@@ -24,6 +24,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'registro/bitacora',
+        title: 'Bitácora de consultas · ShareWay',
+        loadComponent: () =>
+          import('./features/audit/audit-page').then(
+            module => module.AuditPage,
+          ),
+      },
+      {
         path: 'registro',
         title: 'Registro de viajes · ShareWay',
         loadComponent: () =>
