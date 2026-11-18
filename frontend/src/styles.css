@@ -1,0 +1,299 @@
+/* Design tokens and base styles of the ShareWay panel, from the style guide of the project. */
+:root {
+  --sw-primary: #0f5f73;
+  --sw-dark: #0a4656;
+  --sw-soft: #d9eef2;
+  --sw-accent: #f2a31b;
+  --sw-success: #1b8554;
+  --sw-error: #c2362b;
+  --sw-warning: #9a5b00;
+  --sw-ink: #132329;
+  --sw-muted: #5c6b70;
+  --sw-background: #f4f7f8;
+  --sw-surface: #ffffff;
+  --sw-border: #d5dde0;
+  --sw-sidebar-width: 248px;
+  --sw-radius: 10px;
+  --sw-radius-pill: 999px;
+  --sw-shadow:
+    0 1px 2px rgba(19, 35, 41, 0.08), 0 4px 12px rgba(19, 35, 41, 0.06);
+  --sw-font: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--sw-background);
+  color: var(--sw-ink);
+  font-family: var(--sw-font);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.125rem;
+}
+
+a {
+  color: var(--sw-primary);
+}
+
+/* Buttons: pill shaped, 38 to 48 px tall. */
+.sw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: var(--sw-radius-pill);
+  background: var(--sw-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.sw-button:hover:not(:disabled) {
+  background: var(--sw-dark);
+}
+
+.sw-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sw-button--ghost {
+  background: transparent;
+  border-color: var(--sw-border);
+  color: var(--sw-primary);
+}
+
+.sw-button--ghost:hover:not(:disabled) {
+  background: var(--sw-soft);
+}
+
+.sw-button--danger {
+  background: var(--sw-error);
+}
+
+.sw-button--danger:hover:not(:disabled) {
+  background: #9e2b22;
+}
+
+.sw-button--small {
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 0.9rem;
+}
+
+/* Surfaces */
+.sw-card {
+  background: var(--sw-surface);
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius);
+  box-shadow: var(--sw-shadow);
+  padding: 20px;
+}
+
+.sw-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sw-page-header p {
+  margin: 4px 0 0;
+  color: var(--sw-muted);
+}
+
+/* Forms */
+.sw-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sw-field label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.sw-field input,
+.sw-field select,
+.sw-field textarea {
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius);
+  background: var(--sw-surface);
+  color: inherit;
+  font: inherit;
+}
+
+.sw-field input:focus,
+.sw-field select:focus,
+.sw-field textarea:focus {
+  outline: 2px solid var(--sw-primary);
+  outline-offset: 1px;
+}
+
+.sw-field small {
+  color: var(--sw-muted);
+}
+
+/* Tables */
+.sw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.sw-table th,
+.sw-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--sw-border);
+  vertical-align: top;
+}
+
+.sw-table th {
+  background: var(--sw-soft);
+  color: var(--sw-dark);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sw-table tbody tr:hover {
+  background: #fafdfe;
+}
+
+/* Badges */
+.sw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--sw-radius-pill);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sw-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sw-badge--ok {
+  background: #e4f4ec;
+  color: var(--sw-success);
+}
+
+.sw-badge--warn {
+  background: #fdf0da;
+  color: var(--sw-warning);
+}
+
+.sw-badge--down {
+  background: #f9e5e3;
+  color: var(--sw-error);
+}
+
+.sw-badge--idle {
+  background: #eef1f2;
+  color: var(--sw-muted);
+}
+
+/* Feedback */
+.sw-alert {
+  padding: 12px 16px;
+  border-radius: var(--sw-radius);
+  border: 1px solid var(--sw-border);
+  background: var(--sw-surface);
+  margin-bottom: 16px;
+}
+
+.sw-alert--error {
+  border-color: #eec0bb;
+  background: #f9e5e3;
+  color: #8f2820;
+}
+
+.sw-alert--ok {
+  border-color: #bfe3cf;
+  background: #e4f4ec;
+  color: #14673f;
+}
+
+.sw-alert--info {
+  border-color: #bcdde4;
+  background: var(--sw-soft);
+  color: var(--sw-dark);
+}
+
+.sw-empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--sw-muted);
+}
+
+.sw-muted {
+  color: var(--sw-muted);
+}
+
+.sw-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.sw-tab {
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-pill);
+  background: var(--sw-surface);
+  color: var(--sw-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.sw-tab[aria-selected='true'] {
+  background: var(--sw-dark);
+  border-color: var(--sw-dark);
+  color: #fff;
+}

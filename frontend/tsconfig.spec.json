@@ -1,0 +1,9 @@
+/* Type checking of the component and service specs run by vitest. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": []
+  },
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+}
