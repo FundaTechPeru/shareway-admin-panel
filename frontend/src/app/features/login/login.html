@@ -1,0 +1,41 @@
+<main class="login">
+  <form class="login__card sw-card" (ngSubmit)="submit()">
+    <p class="login__brand">ShareWay</p>
+    <h1>Panel de administración</h1>
+    <p class="sw-muted login__hint">
+      Ingresa con tu cuenta de personal autorizado de ShareWay.
+    </p>
+
+    @if (error()) {
+      <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="sw-field">
+      <label for="email">Correo electrónico</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="username"
+        required
+        [(ngModel)]="credentials.email"
+      />
+    </div>
+
+    <div class="sw-field">
+      <label for="password">Contraseña</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+        [(ngModel)]="credentials.password"
+      />
+    </div>
+
+    <button class="sw-button login__submit" type="submit" [disabled]="working()">
+      {{ working() ? 'Ingresando…' : 'Ingresar' }}
+    </button>
+  </form>
+</main>
