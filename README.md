@@ -67,7 +67,7 @@ Everything under `/panel-api` except the sign in needs a `Bearer` token of an `A
 | `GET /panel-api/health` | `GET /health` of the gateway | Circuit of each service as `OPERATIONAL`, `RECOVERING`, `DOWN`, `NOT_CONFIGURED` or `UNKNOWN` |
 | `GET /panel-api/pending-documents` | `GET /api/v1/driver-documents?status=PENDING` | Mock while `FEATURE_REAL_PENDING_DOCS` is off |
 | `PATCH /panel-api/driver-documents/:id/review` | the same path on the service | `{decision, reason}`; the reason is required to reject; 409 if it was already reviewed |
-| `GET /panel-api/trip-records` | `GET /api/v1/admin/trip-records` | `reference` plus one of `tripId`, `driverId`, `passengerId`; writes the audit line first. Mock while `FEATURE_REAL_TRIP_RECORDS` is off |
+| `GET /panel-api/trip-records` | `GET /api/v1/trips/admin` | `reference` plus one of `tripId`, `driverId`, `passengerId` (mapped to `conductorId`/`pasajeroId`); writes the audit line first. Driver name and vehicle are composed from Driver Management. Real with `FEATURE_REAL_TRIP_RECORDS=true`; mock while it is off |
 | `GET /panel-api/trip-records/:id` | the same path on the service | `reference` required; writes the audit line first |
 | `GET /panel-api/audit-log` | the SQLite file of the panel | `from`, `to`, `limit` |
 | `GET /panel-api/audit-log.csv` | the SQLite file of the panel | Same filters; CSV with a Spanish header for the staff |
@@ -85,7 +85,7 @@ does not reshape a 409 or a validation error. Its own errors use the body the pl
 |---|---|
 | Sign in, status of the platform, document review, settlements | **Real**: endpoints that already exist behind the gateway |
 | Pending documents (`GET /api/v1/driver-documents?status=PENDING`) | **Mock** until Driver Management ships the list; flag `FEATURE_REAL_PENDING_DOCS` |
-| Trip records (`GET /api/v1/admin/trip-records`) | **Mock** until the service ships the lookup; flag `FEATURE_REAL_TRIP_RECORDS` |
+| Trip records (`GET /api/v1/trips/admin`) | **Real** now that Trip Execution ships the admin lookup: set `FEATURE_REAL_TRIP_RECORDS=true` (the mock stays for development). The driver name and vehicle are composed from Driver Management per row |
 | Audit trail of the lookups | **Real**, owned by the panel: SQLite behind a repository |
 
 Each of the two endpoints that do not exist yet lives behind an adapter with the same interface
@@ -138,7 +138,7 @@ Read by the BFF (`server/src/config.ts`):
 | `HEALTH_TIMEOUT_MS` | `3000` | Shorter budget for the status screen, so it always paints |
 | `DB_FILE` | `./data/panel.db` | SQLite file with the audit trail (`:memory:` in the tests) |
 | `FEATURE_REAL_PENDING_DOCS` | `false` | `true` sends the pending documents to the gateway instead of the mock |
-| `FEATURE_REAL_TRIP_RECORDS` | `false` | `true` sends the trip record lookups to the gateway instead of the mock |
+| `FEATURE_REAL_TRIP_RECORDS` | `false` | `true` sends the trip record lookups to the gateway (`GET /api/v1/trips/admin`) instead of the mock, composing the driver and vehicle from Driver Management. Trip Execution ships the endpoint, so **production should set it to `true`** (`docker-compose.yml` already does) |
 | `WEB_ROOT` | `./public` | Folder with the built SPA; ignored while it does not exist |
 | `LOG_LEVEL` | `info` | pino level (`silent` turns logs off) |
 
