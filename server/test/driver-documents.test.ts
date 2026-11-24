@@ -71,6 +71,57 @@ describe('pending documents', () => {
       path: '/api/v1/driver-documents?status=PENDING',
     });
   });
+
+  it('parses the real Driver Management response, including the nested driver', async () => {
+    // The exact shape GET /api/v1/driver-documents?status=PENDING now returns: a plain array with
+    // the primary field names (type, fileName, submittedAt) and the driver's phone and license.
+    const {app} = testPanel({
+      env: {FEATURE_REAL_PENDING_DOCS: 'true'},
+      gateway: () => ({
+        status: 200,
+        body: [
+          {
+            id: '3f9a1c52-5b47-4d8e-9a10-6c2d4e8f1a01',
+            type: 'DRIVERS_LICENSE',
+            status: 'PENDING',
+            fileName: 'licencia-q1247853.pdf',
+            submittedAt: '2026-11-14T13:42:00.000Z',
+            reviewedAt: null,
+            driver: {
+              id: 'b7c1d2e3-4f50-4a61-8b72-9c0d1e2f3a40',
+              fullName: 'Luis Alberto Quispe Mamani',
+              email: 'luis.quispe@upc.edu.pe',
+              phone: '+51987654321',
+              licenseNumber: 'Q1247853',
+            },
+          },
+        ],
+      }),
+    });
+
+    const response = await request(app)
+      .get('/panel-api/pending-documents')
+      .set('authorization', bearer());
+
+    expect(response.body).toEqual({
+      source: 'gateway',
+      documents: [
+        {
+          id: '3f9a1c52-5b47-4d8e-9a10-6c2d4e8f1a01',
+          type: 'DRIVERS_LICENSE',
+          fileName: 'licencia-q1247853.pdf',
+          submittedAt: '2026-11-14T13:42:00.000Z',
+          driver: {
+            id: 'b7c1d2e3-4f50-4a61-8b72-9c0d1e2f3a40',
+            name: 'Luis Alberto Quispe Mamani',
+            email: 'luis.quispe@upc.edu.pe',
+            phone: '+51987654321',
+            licenseNumber: 'Q1247853',
+          },
+        },
+      ],
+    });
+  });
 });
 
 describe('document review', () => {

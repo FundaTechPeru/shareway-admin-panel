@@ -65,7 +65,7 @@ Everything under `/panel-api` except the sign in needs a `Bearer` token of an `A
 |---|---|---|
 | `POST /panel-api/login` | `POST /api/v1/auth/login` | Public. Answers `{token, admin}`; 403 for anyone who is not staff |
 | `GET /panel-api/health` | `GET /health` of the gateway | Circuit of each service as `OPERATIONAL`, `RECOVERING`, `DOWN`, `NOT_CONFIGURED` or `UNKNOWN` |
-| `GET /panel-api/pending-documents` | `GET /api/v1/driver-documents?status=PENDING` | Mock while `FEATURE_REAL_PENDING_DOCS` is off |
+| `GET /panel-api/pending-documents` | `GET /api/v1/driver-documents?status=PENDING` | Real with `FEATURE_REAL_PENDING_DOCS=true`; mock while it is off |
 | `PATCH /panel-api/driver-documents/:id/review` | the same path on the service | `{decision, reason}`; the reason is required to reject; 409 if it was already reviewed |
 | `GET /panel-api/trip-records` | `GET /api/v1/admin/trip-records` | `reference` plus one of `tripId`, `driverId`, `passengerId`; writes the audit line first. Mock while `FEATURE_REAL_TRIP_RECORDS` is off |
 | `GET /panel-api/trip-records/:id` | the same path on the service | `reference` required; writes the audit line first |
@@ -84,7 +84,7 @@ does not reshape a 409 or a validation error. Its own errors use the body the pl
 | Capability | Source |
 |---|---|
 | Sign in, status of the platform, document review, settlements | **Real**: endpoints that already exist behind the gateway |
-| Pending documents (`GET /api/v1/driver-documents?status=PENDING`) | **Mock** until Driver Management ships the list; flag `FEATURE_REAL_PENDING_DOCS` |
+| Pending documents (`GET /api/v1/driver-documents?status=PENDING`) | **Real** now that Driver Management ships the list: set `FEATURE_REAL_PENDING_DOCS=true` (the mock stays for development without a backend) |
 | Trip records (`GET /api/v1/admin/trip-records`) | **Mock** until the service ships the lookup; flag `FEATURE_REAL_TRIP_RECORDS` |
 | Audit trail of the lookups | **Real**, owned by the panel: SQLite behind a repository |
 
@@ -137,7 +137,7 @@ Read by the BFF (`server/src/config.ts`):
 | `GATEWAY_TIMEOUT_MS` | `10000` | Time without an answer from the gateway before giving up |
 | `HEALTH_TIMEOUT_MS` | `3000` | Shorter budget for the status screen, so it always paints |
 | `DB_FILE` | `./data/panel.db` | SQLite file with the audit trail (`:memory:` in the tests) |
-| `FEATURE_REAL_PENDING_DOCS` | `false` | `true` sends the pending documents to the gateway instead of the mock |
+| `FEATURE_REAL_PENDING_DOCS` | `false` | `true` sends the pending documents to the gateway instead of the mock. Driver Management ships the list, so **production should set it to `true`** (`docker-compose.yml` already does) |
 | `FEATURE_REAL_TRIP_RECORDS` | `false` | `true` sends the trip record lookups to the gateway instead of the mock |
 | `WEB_ROOT` | `./public` | Folder with the built SPA; ignored while it does not exist |
 | `LOG_LEVEL` | `info` | pino level (`silent` turns logs off) |
