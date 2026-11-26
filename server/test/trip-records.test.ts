@@ -145,7 +145,13 @@ describe('trip record search', () => {
         if (call.path === `/api/v1/drivers/${driverId}/vehicle`) {
           return {
             status: 200,
-            body: {plate: 'XYZ-789', brand: 'Kia', model: 'Rio', color: 'Gris', seats: 4},
+            body: {
+              plate: 'XYZ-789',
+              brand: 'Kia',
+              model: 'Rio',
+              color: 'Gris',
+              seats: 4,
+            },
           };
         }
         return {status: 404, body: {}};
@@ -169,7 +175,13 @@ describe('trip record search', () => {
         name: 'Rosa Maria Chavez Flores',
         licenseNumber: 'C8841207',
       },
-      vehicle: {plate: 'XYZ-789', brand: 'Kia', model: 'Rio', color: 'Gris', seats: 4},
+      vehicle: {
+        plate: 'XYZ-789',
+        brand: 'Kia',
+        model: 'Rio',
+        color: 'Gris',
+        seats: 4,
+      },
       route: {
         origin: 'UPC San Isidro',
         destination: 'UPC Villa',
@@ -192,9 +204,9 @@ describe('trip record search', () => {
       },
     ]);
     // The driver is fetched once (profile + vehicle), not per passenger.
-    expect(
-      calls.filter(c => c.path.includes('/public-profile')),
-    ).toHaveLength(1);
+    expect(calls.filter(c => c.path.includes('/public-profile'))).toHaveLength(
+      1,
+    );
   });
 
   it('degrades to empty driver and vehicle when Driver Management does not answer them', async () => {
@@ -235,11 +247,31 @@ const realAdminRow = {
   inicioReal: '2026-11-15T22:40:00.000Z',
   finReal: '2026-11-15T23:45:00.000Z',
   ruta: {
-    origen: {etiqueta: 'UPC San Isidro', latitud: -12.1, longitud: -77.0, tipo: 'ORIGEN'},
-    destino: {etiqueta: 'UPC Villa', latitud: -12.2, longitud: -76.9, tipo: 'DESTINO'},
+    origen: {
+      etiqueta: 'UPC San Isidro',
+      latitud: -12.1,
+      longitud: -77.0,
+      tipo: 'ORIGEN',
+    },
+    destino: {
+      etiqueta: 'UPC Villa',
+      latitud: -12.2,
+      longitud: -76.9,
+      tipo: 'DESTINO',
+    },
     puntos: [
-      {etiqueta: 'UPC San Isidro', latitud: -12.1, longitud: -77.0, tipo: 'ORIGEN'},
-      {etiqueta: 'Plaza Lima Sur', latitud: -12.15, longitud: -76.95, tipo: 'PARADA'},
+      {
+        etiqueta: 'UPC San Isidro',
+        latitud: -12.1,
+        longitud: -77.0,
+        tipo: 'ORIGEN',
+      },
+      {
+        etiqueta: 'Plaza Lima Sur',
+        latitud: -12.15,
+        longitud: -76.95,
+        tipo: 'PARADA',
+      },
       {etiqueta: 'UPC Villa', latitud: -12.2, longitud: -76.9, tipo: 'DESTINO'},
     ],
   },

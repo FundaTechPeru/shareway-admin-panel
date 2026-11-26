@@ -113,7 +113,10 @@ export class GatewayTripRecords implements TripRecordsAdapter {
       path: `/api/v1/trips/admin${qs ? `?${qs}` : ''}`,
       token,
     });
-    return {source: 'gateway', records: await this.enrichAll(answer.body, token)};
+    return {
+      source: 'gateway',
+      records: await this.enrichAll(answer.body, token),
+    };
   }
 
   async byId(
@@ -433,7 +436,8 @@ function toRecord(row: Record<string, unknown>): TripRecord {
     // Filled from GET /api/v1/drivers/{id}/vehicle by the adapter.
     vehicle: toVehicle({}),
     route: {
-      origin: label(route['origen'] ?? route['origin']) || etiqueta(points, 'ORIGEN'),
+      origin:
+        label(route['origen'] ?? route['origin']) || etiqueta(points, 'ORIGEN'),
       destination:
         label(route['destino'] ?? route['destination']) ||
         etiqueta(points, 'DESTINO'),
@@ -446,20 +450,29 @@ function toRecord(row: Record<string, unknown>): TripRecord {
       // The real route has no per-stop arrival time; leave it empty rather than invent one.
       arrivedAt: text(point['arrivedAt']),
     })),
-    passengers: asArray(row['abordajes'] ?? row['passengers']).map(passenger => ({
-      passengerId: String(
-        passenger['pasajeroId'] ?? passenger['passengerId'] ?? passenger['id'] ?? '',
-      ),
-      // TODO: Driver Management has no public passenger profile yet, so the name is left empty
-      // instead of invented; fill it once such an endpoint exists.
-      name: String(passenger['name'] ?? passenger['fullName'] ?? ''),
-      stop: String(passenger['stop'] ?? ''),
-      boardedAt: String(passenger['abordadoEn'] ?? passenger['boardedAt'] ?? ''),
-      validation:
-        String(passenger['metodo'] ?? passenger['validation'] ?? '').toUpperCase() === 'QR'
-          ? 'QR'
-          : 'PIN',
-    })),
+    passengers: asArray(row['abordajes'] ?? row['passengers']).map(
+      passenger => ({
+        passengerId: String(
+          passenger['pasajeroId'] ??
+            passenger['passengerId'] ??
+            passenger['id'] ??
+            '',
+        ),
+        // TODO: Driver Management has no public passenger profile yet, so the name is left empty
+        // instead of invented; fill it once such an endpoint exists.
+        name: String(passenger['name'] ?? passenger['fullName'] ?? ''),
+        stop: String(passenger['stop'] ?? ''),
+        boardedAt: String(
+          passenger['abordadoEn'] ?? passenger['boardedAt'] ?? '',
+        ),
+        validation:
+          String(
+            passenger['metodo'] ?? passenger['validation'] ?? '',
+          ).toUpperCase() === 'QR'
+            ? 'QR'
+            : 'PIN',
+      }),
+    ),
   };
 }
 
@@ -487,7 +500,9 @@ function label(value: unknown): string {
 /** The label of the first point of a given type (ORIGEN, DESTINO), if any. */
 function etiqueta(points: Record<string, unknown>[], type: string): string {
   const point = points.find(
-    candidate => String(candidate['tipo'] ?? candidate['type'] ?? '').toUpperCase() === type,
+    candidate =>
+      String(candidate['tipo'] ?? candidate['type'] ?? '').toUpperCase() ===
+      type,
   );
   return point ? label(point) : '';
 }
