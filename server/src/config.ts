@@ -14,6 +14,22 @@ export interface PanelConfig {
   webRoot: string;
   /** Pino level: fatal, error, warn, info, debug, trace or silent. */
   logLevel: string;
+  /** Base URLs of the Render services the keep-warm job pings; any left unset is skipped. */
+  healthPing: HealthPingConfig;
+}
+
+/**
+ * Base URL of each service on Render for the keep-warm job. They are optional: the panel runs on
+ * a VPS that is always on, so it pings the free-tier services every 13 minutes to stop them from
+ * sleeping. A service with no URL is simply not pinged.
+ */
+export interface HealthPingConfig {
+  driverManagement?: string;
+  tripPlanningMatching?: string;
+  bookingPricing?: string;
+  paymentsSettlement?: string;
+  tripExecution?: string;
+  apiGateway?: string;
 }
 
 /**
@@ -38,7 +54,23 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): PanelConfig {
     },
     webRoot: env.WEB_ROOT ?? './public',
     logLevel: env.LOG_LEVEL ?? 'info',
+    healthPing: {
+      driverManagement: optionalUrl(env.HEALTH_PING_DRIVER_MANAGEMENT_URL),
+      tripPlanningMatching: optionalUrl(
+        env.HEALTH_PING_TRIP_PLANNING_MATCHING_URL,
+      ),
+      bookingPricing: optionalUrl(env.HEALTH_PING_BOOKING_PRICING_URL),
+      paymentsSettlement: optionalUrl(env.HEALTH_PING_PAYMENTS_SETTLEMENT_URL),
+      tripExecution: optionalUrl(env.HEALTH_PING_TRIP_EXECUTION_URL),
+      apiGateway: optionalUrl(env.HEALTH_PING_API_GATEWAY_URL),
+    },
   };
+}
+
+/** A keep-warm URL is optional; an empty or blank value is treated as unset. */
+function optionalUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? withoutTrailingSlash(trimmed) : undefined;
 }
 
 function required(env: NodeJS.ProcessEnv, name: string): string {
