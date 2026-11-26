@@ -146,6 +146,7 @@ Read by the BFF (`server/src/config.ts`):
 | `HEALTH_PING_BOOKING_PRICING_URL` | none, off | Base URL of Booking & Pricing on Render for keep-warm |
 | `HEALTH_PING_PAYMENTS_SETTLEMENT_URL` | none, off | Base URL of Payments & Settlement on Render for keep-warm |
 | `HEALTH_PING_TRIP_EXECUTION_URL` | none, off | Base URL of Trip Execution on Render for keep-warm |
+| `HEALTH_PING_API_GATEWAY_URL` | none, off | Base URL of the API gateway on Render for keep-warm |
 
 ### Keep-warm
 
@@ -153,12 +154,13 @@ Render's free tier puts a service to sleep after about fifteen minutes without t
 first request afterwards waits for it to wake. The panel runs on a VPS that is always on, so a
 background job (`server/src/jobs/keep-warm.ts`) hits the real health endpoint of each service
 every thirteen minutes to keep it awake: `/actuator/health` for the Spring services
-(driver-management, trip-planning-matching, booking-pricing, payments-settlement) and `/health`
-for Trip Execution (.NET). Each `HEALTH_PING_*_URL` is the base URL of the service on Render; the
-job appends the health path. A variable left unset means that service is simply not pinged, so the
-job is off by default and in the tests. A ping that fails is logged and ignored — it never brings
-the panel down. The job starts with Express and stops on `SIGTERM`. See `.env.example` for the
-values.
+(driver-management, trip-planning-matching, booking-pricing, payments-settlement) and plain
+`/health` for Trip Execution (.NET) and the API gateway (Express) — the gateway is on Render too,
+and a sleeping gateway would keep the panel from reaching any service behind it even while those
+are awake. Each `HEALTH_PING_*_URL` is the base URL of the service on Render; the job appends the
+health path. A variable left unset means that service is simply not pinged, so the job is off by
+default and in the tests. A ping that fails is logged and ignored — it never brings the panel down.
+The job starts with Express and stops on `SIGTERM`. See `.env.example` for the values.
 
 The panel keeps no secret: it has no `JWT_SECRET`, no credentials of the services and no database
 password. It reads the claims of the token it was given to know who is signed in, without

@@ -27,6 +27,7 @@ describe('keepWarmTargets', () => {
     const targets = keepWarmTargets({
       driverManagement: 'https://dm.onrender.com',
       tripExecution: 'https://te.onrender.com',
+      apiGateway: 'https://gw.onrender.com',
     });
 
     expect(targets).toEqual([
@@ -35,6 +36,7 @@ describe('keepWarmTargets', () => {
         url: 'https://dm.onrender.com/actuator/health',
       },
       {name: 'trip-execution', url: 'https://te.onrender.com/health'},
+      {name: 'api-gateway', url: 'https://gw.onrender.com/health'},
     ]);
   });
 

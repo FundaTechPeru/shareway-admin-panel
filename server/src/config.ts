@@ -29,6 +29,7 @@ export interface HealthPingConfig {
   bookingPricing?: string;
   paymentsSettlement?: string;
   tripExecution?: string;
+  apiGateway?: string;
 }
 
 /**
@@ -61,6 +62,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): PanelConfig {
       bookingPricing: optionalUrl(env.HEALTH_PING_BOOKING_PRICING_URL),
       paymentsSettlement: optionalUrl(env.HEALTH_PING_PAYMENTS_SETTLEMENT_URL),
       tripExecution: optionalUrl(env.HEALTH_PING_TRIP_EXECUTION_URL),
+      apiGateway: optionalUrl(env.HEALTH_PING_API_GATEWAY_URL),
     },
   };
 }

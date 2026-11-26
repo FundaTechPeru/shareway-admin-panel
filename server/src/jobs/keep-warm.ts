@@ -8,7 +8,8 @@ export const KEEP_WARM_INTERVAL_MS = 13 * 60 * 1000;
 const PING_TIMEOUT_MS = 8_000;
 
 const SPRING_HEALTH = '/actuator/health';
-const DOTNET_HEALTH = '/health';
+/** Plain /health: Trip Execution (.NET) and the gateway (Express) both answer this path. */
+const PLAIN_HEALTH = '/health';
 
 interface PingTarget {
   name: string;
@@ -81,7 +82,9 @@ export function keepWarmTargets(ping: HealthPingConfig): PingTarget[] {
       path: SPRING_HEALTH,
     },
     // Trip Execution is the .NET service; its liveness lives at /health, not /actuator/health.
-    {name: 'trip-execution', base: ping.tripExecution, path: DOTNET_HEALTH},
+    {name: 'trip-execution', base: ping.tripExecution, path: PLAIN_HEALTH},
+    // The gateway is Express, same liveness path as this panel's own GET /health.
+    {name: 'api-gateway', base: ping.apiGateway, path: PLAIN_HEALTH},
   ];
   return entries
     .filter((entry): entry is {name: string; base: string; path: string} =>
