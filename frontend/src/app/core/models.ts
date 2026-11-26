@@ -146,6 +146,32 @@ export interface UserDirectoryPage {
   totalPages: number;
 }
 
+export type AlertReporterRole = 'DRIVER' | 'PASSENGER';
+
+export type AlertStatus = 'OPEN' | 'ATTENDED';
+
+export interface Alert {
+  id: string;
+  tripId: string;
+  reporterId: string;
+  reporterRole: AlertReporterRole;
+  reporterName?: string;
+  type: string;
+  description: string;
+  status: AlertStatus;
+  createdAt: string;
+  attendedAt?: string;
+  attendedBy?: string;
+}
+
+export interface AlertsPage {
+  items: Alert[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
 export type SettlementStatus = 'PENDING' | 'PAID';
 
 export interface Settlement {

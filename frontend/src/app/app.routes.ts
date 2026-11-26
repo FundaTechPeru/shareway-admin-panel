@@ -40,6 +40,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'alertas',
+        title: 'Alertas · ShareWay',
+        loadComponent: () =>
+          import('./features/alerts/alerts-page').then(
+            module => module.AlertsPage,
+          ),
+      },
+      {
         path: 'registro/bitacora',
         title: 'Bitácora de consultas · ShareWay',
         loadComponent: () =>
