@@ -2,6 +2,7 @@ import {Component, computed, inject, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {documentLabel, MIN_REASON_LENGTH} from '../../core/document-type';
 import {formatDateTime} from '../../core/format';
+import {MenuBadgesService} from '../../core/menu-badges.service';
 import type {PendingDocument, PendingDocumentsPage} from '../../core/models';
 import {PanelApiService} from '../../core/panel-api.service';
 import {messageOf, PanelError} from '../../core/panel-error';
@@ -21,6 +22,7 @@ type Decision = 'APPROVED' | 'REJECTED';
 })
 export class DriversPage {
   private readonly api = inject(PanelApiService);
+  private readonly badges = inject(MenuBadgesService);
 
   protected readonly documents = signal<PendingDocument[]>([]);
   protected readonly source = signal<string>('gateway');
@@ -125,6 +127,7 @@ export class DriversPage {
       );
       this.clearSelection();
       await this.fetchDocuments();
+      void this.badges.refreshPendingDrivers();
     } catch (failure) {
       this.error.set(this.explain(failure));
       if (failure instanceof PanelError && failure.status === 409) {

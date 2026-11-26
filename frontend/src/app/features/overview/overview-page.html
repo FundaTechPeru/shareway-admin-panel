@@ -49,6 +49,18 @@
     }
   </a>
 
+  <a class="sw-card overview__card" routerLink="/alertas">
+    <span class="overview__label">Alertas abiertas</span>
+    @if (openAlerts() !== null) {
+      <strong class="overview__metric">{{ openAlerts() }}</strong>
+      <span class="sw-muted">Emergencias por atender</span>
+    } @else if (alertsError()) {
+      <span class="sw-alert sw-alert--error">{{ alertsError() }}</span>
+    } @else {
+      <span class="sw-muted">Cargando…</span>
+    }
+  </a>
+
   <a class="sw-card overview__card" routerLink="/liquidaciones">
     <span class="overview__label">Liquidaciones pendientes</span>
     @if (pendingSettlements() !== null) {

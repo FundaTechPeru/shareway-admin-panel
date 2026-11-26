@@ -61,20 +61,23 @@
   font-weight: 500;
 }
 
-.shell__link--soon {
-  color: #7fa3ae;
-  cursor: not-allowed;
-}
-
-.shell__link--soon:hover {
-  background: transparent;
-}
-
-.shell__link--soon small {
+.shell__badge {
   margin-left: auto;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--sw-accent);
+  color: #3d2600;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.shell__link--active .shell__badge {
+  background: #fff;
 }
 
 .shell__icon {

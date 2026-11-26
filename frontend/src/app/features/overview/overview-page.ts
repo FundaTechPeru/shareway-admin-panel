@@ -2,6 +2,7 @@ import {Component, inject, signal} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {formatTime} from '../../core/format';
 import type {
+  AlertsPage,
   PendingDocumentsPage,
   PlatformReport,
   Settlement,
@@ -39,6 +40,9 @@ export class OverviewPage {
   protected readonly pendingSettlements = signal<number | null>(null);
   protected readonly settlementsError = signal<string | null>(null);
 
+  protected readonly openAlerts = signal<number | null>(null);
+  protected readonly alertsError = signal<string | null>(null);
+
   protected readonly loading = signal(true);
 
   protected readonly formatTime = formatTime;
@@ -53,8 +57,25 @@ export class OverviewPage {
       this.loadServices(),
       this.loadPendingDocuments(),
       this.loadPendingSettlements(),
+      this.loadOpenAlerts(),
     ]);
     this.loading.set(false);
+  }
+
+  private async loadOpenAlerts(): Promise<void> {
+    try {
+      const page = await this.api.get<AlertsPage>('/panel-api/alerts', {
+        status: 'OPEN',
+        size: '1',
+      });
+      this.openAlerts.set(page.total);
+      this.alertsError.set(null);
+    } catch (failure) {
+      this.openAlerts.set(null);
+      this.alertsError.set(
+        messageOf(failure, 'No pudimos leer las alertas abiertas.'),
+      );
+    }
   }
 
   private async loadServices(): Promise<void> {

@@ -80,6 +80,9 @@
           {{ record.vehicle.brand }} {{ record.vehicle.model }} ·
           {{ record.vehicle.color }} · {{ record.vehicle.seats }} asientos
         </p>
+        @if (source() === 'gateway') {
+          <p class="sw-muted">Vehículo actual del conductor</p>
+        }
       </div>
       <div>
         <h3>Ruta</h3>
