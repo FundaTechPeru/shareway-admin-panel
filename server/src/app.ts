@@ -5,6 +5,7 @@ import {handleErrors} from './error-handler.js';
 import {sendError} from './http-errors.js';
 import {createLogger, logRequests, type Logger} from './logger.js';
 import {requireAdmin} from './middleware/auth.js';
+import {alertsRouter} from './routes/alerts.js';
 import {loginRouter} from './routes/auth.js';
 import {auditLogRouter} from './routes/audit-log.js';
 import {driverDocumentsRouter} from './routes/driver-documents.js';
@@ -37,6 +38,7 @@ export function createApp(
   app.use('/panel-api', auditLogRouter(deps));
   app.use('/panel-api', settlementsRouter(deps));
   app.use('/panel-api', usersRouter(deps));
+  app.use('/panel-api', alertsRouter(deps));
   const spa = spaRouter(deps.config.webRoot, logger);
   if (spa) {
     app.use(spa);

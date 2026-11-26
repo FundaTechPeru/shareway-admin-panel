@@ -105,7 +105,12 @@ export interface TripRecordAnswer {
   reference: string;
 }
 
-export type AuditSearchType = 'TRIP' | 'DRIVER' | 'PASSENGER' | 'TRIP_DETAIL';
+export type AuditSearchType =
+  | 'TRIP'
+  | 'DRIVER'
+  | 'PASSENGER'
+  | 'TRIP_DETAIL'
+  | 'ALERT_ATTEND';
 
 export interface AuditLogEntry {
   id: number;

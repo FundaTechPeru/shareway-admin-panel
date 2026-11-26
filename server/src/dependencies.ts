@@ -1,3 +1,4 @@
+import {createAlertsAdapter, type AlertsAdapter} from './adapters/alerts.js';
 import {
   createPendingDocumentsAdapter,
   type PendingDocumentsAdapter,
@@ -26,6 +27,7 @@ export interface PanelDependencies {
   pendingDocuments: PendingDocumentsAdapter;
   tripRecords: TripRecordsAdapter;
   users: UserDirectoryAdapter;
+  alerts: AlertsAdapter;
 }
 
 /**
@@ -49,5 +51,6 @@ export function createDependencies(
     tripRecords:
       overrides.tripRecords ?? createTripRecordsAdapter(config, gateway),
     users: overrides.users ?? createUserDirectoryAdapter(gateway),
+    alerts: overrides.alerts ?? createAlertsAdapter(gateway),
   };
 }
