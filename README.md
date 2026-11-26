@@ -38,11 +38,19 @@ process also serves the built SPA.
 | Screen | Route | User story | Reads |
 |---|---|---|---|
 | Sign in | `/login` | — | `POST /panel-api/login` |
-| Services | `/servicios` | US-34 | `GET /panel-api/health` every 30 s |
+| Panel (overview) | `/panel` | — | a card each: services, pending documents, open alerts and pending settlements |
+| Users | `/usuarios` | — | the directory of users with filters and paging |
 | Driver verification | `/conductores` | US-35 | pending documents; review of one document |
+| Alerts | `/alertas` | — | emergency alerts by status; mark an open one as attended |
+| Services | `/servicios` | US-34 | `GET /panel-api/health` every 30 s |
 | Trip records | `/registro` | US-36 | lookup by trip, driver or passenger |
 | Audit trail | `/registro/bitacora` | US-37 | the lines of the lookups, and their CSV |
 | Settlements | `/liquidaciones` | US-25 | settlements by status; mark one as paid |
+
+The sidebar keeps that order (Panel, Usuarios, Conductores, Alertas, Servicios, Registro de viajes,
+Liquidaciones). «Conductores» and «Alertas» carry a counter — documents waiting for review and
+open alerts — read once when the panel opens and refreshed after the related action; a counter
+that cannot be read simply shows no badge and never breaks the menu.
 
 Only `ADMIN` enters: the BFF answers 403 to anybody else, the panel says «Acceso solo para
 personal autorizado» and no screen opens. The token lives in memory and is mirrored in
@@ -69,6 +77,9 @@ Everything under `/panel-api` except the sign in needs a `Bearer` token of an `A
 | `PATCH /panel-api/driver-documents/:id/review` | the same path on the service | `{decision, reason}`; the reason is required to reject; 409 if it was already reviewed |
 | `GET /panel-api/trip-records` | `GET /api/v1/trips/admin` | `reference` plus one of `tripId`, `driverId`, `passengerId` (mapped to `conductorId`/`pasajeroId`); writes the audit line first. Driver name and vehicle are composed from Driver Management. Real with `FEATURE_REAL_TRIP_RECORDS=true`; mock while it is off |
 | `GET /panel-api/trip-records/:id` | the same path on the service | `reference` required; writes the audit line first |
+| `GET /panel-api/users` | `GET /api/v1/users` | Directory with `role`, `search`, `page` and `size`; paged answer |
+| `GET /panel-api/alerts` | `GET /api/v1/trips/alertas` | `status=OPEN\|ATTENDED` (mapped to `estado=Abierta\|Atendida`), `page`, `size`. English model; the reporter name is filled best-effort from Driver Management when the reporter is a driver |
+| `PATCH /panel-api/alerts/:id/attend` | `PATCH /api/v1/trips/alertas/:id/atender` | Marks an open alert as attended; writes the audit line first; 404/409 handed back, gateway failure as 502 |
 | `GET /panel-api/audit-log` | the SQLite file of the panel | `from`, `to`, `limit` |
 | `GET /panel-api/audit-log.csv` | the SQLite file of the panel | Same filters; CSV with a Spanish header for the staff |
 | `GET /panel-api/settlements` | `GET /api/v1/admin/settlements` | `status=PENDING\|PAID`, or every settlement with no status |
@@ -83,7 +94,7 @@ does not reshape a 409 or a validation error. Its own errors use the body the pl
 
 | Capability | Source |
 |---|---|
-| Sign in, status of the platform, document review, settlements | **Real**: endpoints that already exist behind the gateway |
+| Sign in, status of the platform, document review, settlements, users directory, emergency alerts | **Real**: endpoints that already exist behind the gateway |
 | Pending documents (`GET /api/v1/driver-documents?status=PENDING`) | **Real** now that Driver Management ships the list: set `FEATURE_REAL_PENDING_DOCS=true` (the mock stays for development without a backend) |
 | Trip records (`GET /api/v1/trips/admin`) | **Real** now that Trip Execution ships the admin lookup: set `FEATURE_REAL_TRIP_RECORDS=true` (the mock stays for development). The driver name and vehicle are composed from Driver Management per row |
 | Audit trail of the lookups | **Real**, owned by the panel: SQLite behind a repository |
@@ -166,6 +177,20 @@ The panel keeps no secret: it has no `JWT_SECRET`, no credentials of the service
 password. It reads the claims of the token it was given to know who is signed in, without
 checking the signature, because the gateway and Driver Management already did and will again.
 
+### Deployment order
+
+On Render, deploy from the bottom of the stack up, so each piece has what it needs when it starts:
+
+1. **Set `JWT_SECRET`** to the same value on every service and on the gateway — a token minted by
+   one is validated by the others, so a mismatch logs everyone out.
+2. **Deploy the services** (driver-management, trip-planning-matching, booking-pricing,
+   payments-settlement, trip-execution) and wait for each to be healthy.
+3. **Deploy the API gateway**, pointing it at the services.
+4. **Deploy the panel** last, with `GATEWAY_URL` at the gateway and `FEATURE_REAL_PENDING_DOCS`
+   and `FEATURE_REAL_TRIP_RECORDS` set to `true`. Fill the `HEALTH_PING_*_URL` variables with each
+   service's real Render base URL to keep them warm (see below); any left unset is simply not
+   pinged.
+
 ### Audit trail
 
 One SQLite file, created on the first start, with one table of lookups behind
@@ -206,10 +231,12 @@ without a reference and a settlement that somebody else had already paid.
 - **The BFF does not verify the signature of the token.** It reads `sub`, `role` and `email` to
   know who is asking and refuses anyone who is not `ADMIN`; the gateway holds the secret and
   checks the signature on every forwarded call.
-- **Two endpoints are mocked** and both are read-only lists, so no mock ever writes to a service.
-  Nothing else is faked: a document review and a settlement marked as paid always travel.
-- The sidebar shows Panel, Verificaciones, Alertas and Usuarios as «próximamente»: the wireframes
-  include them and this version does not.
+- **The mocks are a development fallback.** The pending documents and the trip records adapters
+  seed believable data while their flag is off; production turns both flags on and nothing is
+  faked. A document review, a settlement marked as paid and an alert marked as attended always
+  travel to the service.
+- **Every screen in the wireframes is built**: Panel, Usuarios, Conductores, Alertas, Servicios,
+  Registro de viajes and Liquidaciones. There is no «próximamente» item left in the sidebar.
 - The Docker image is built by the CI workflow; it was not built on the development machine.
 
 ## Contributing
