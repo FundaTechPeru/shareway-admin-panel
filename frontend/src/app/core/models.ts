@@ -121,6 +121,26 @@ export interface AuditLogPage {
   lines: AuditLogEntry[];
 }
 
+export type UserRole = 'PASSENGER' | 'DRIVER' | 'ADMIN';
+
+export interface DirectoryUser {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  role: UserRole;
+  driverStatus: string | null;
+  createdAt: string;
+}
+
+export interface UserDirectoryPage {
+  content: DirectoryUser[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export type SettlementStatus = 'PENDING' | 'PAID';
 
 export interface Settlement {

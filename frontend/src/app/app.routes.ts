@@ -16,6 +16,22 @@ export const routes: Routes = [
     canActivate: [signedInGuard],
     children: [
       {
+        path: 'panel',
+        title: 'Panel · ShareWay',
+        loadComponent: () =>
+          import('./features/overview/overview-page').then(
+            module => module.OverviewPage,
+          ),
+      },
+      {
+        path: 'usuarios',
+        title: 'Usuarios · ShareWay',
+        loadComponent: () =>
+          import('./features/users/users-page').then(
+            module => module.UsersPage,
+          ),
+      },
+      {
         path: 'conductores',
         title: 'Verificación de conductores · ShareWay',
         loadComponent: () =>
@@ -55,8 +71,8 @@ export const routes: Routes = [
             module => module.ServicesPage,
           ),
       },
-      {path: '', pathMatch: 'full', redirectTo: 'servicios'},
+      {path: '', pathMatch: 'full', redirectTo: 'panel'},
     ],
   },
-  {path: '**', redirectTo: 'servicios'},
+  {path: '**', redirectTo: 'panel'},
 ];

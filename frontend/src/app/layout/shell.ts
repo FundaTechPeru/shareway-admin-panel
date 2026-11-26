@@ -29,14 +29,13 @@ export class Shell {
   });
 
   protected readonly items: NavItem[] = [
-    {label: 'Panel', icon: '▦'},
-    {label: 'Verificaciones', icon: '✓'},
-    {label: 'Alertas', icon: '!'},
-    {label: 'Usuarios', icon: '○'},
+    {label: 'Panel', path: '/panel', icon: '▦'},
+    {label: 'Usuarios', path: '/usuarios', icon: '○'},
     {label: 'Conductores', path: '/conductores', icon: '⬙'},
     {label: 'Servicios', path: '/servicios', icon: '◉'},
     {label: 'Registro de viajes', path: '/registro', icon: '☰'},
     {label: 'Liquidaciones', path: '/liquidaciones', icon: '₴'},
+    {label: 'Alertas', icon: '!'},
   ];
 
   protected async signOut(): Promise<void> {
