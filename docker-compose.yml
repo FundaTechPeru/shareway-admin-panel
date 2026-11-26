@@ -12,7 +12,7 @@ services:
       GATEWAY_URL: 'http://host.docker.internal:8080'
       DB_FILE: '/app/data/panel.db'
       FEATURE_REAL_PENDING_DOCS: 'true'
-      FEATURE_REAL_TRIP_RECORDS: 'false'
+      FEATURE_REAL_TRIP_RECORDS: 'true'
       LOG_LEVEL: 'info'
     volumes:
       # The audit trail of the lookups has to survive a restart of the container.
