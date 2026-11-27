@@ -11,9 +11,18 @@ services:
       PORT: '8090'
       GATEWAY_URL: 'http://host.docker.internal:8080'
       DB_FILE: '/app/data/panel.db'
-      FEATURE_REAL_PENDING_DOCS: 'false'
-      FEATURE_REAL_TRIP_RECORDS: 'false'
+      FEATURE_REAL_PENDING_DOCS: 'true'
+      FEATURE_REAL_TRIP_RECORDS: 'true'
       LOG_LEVEL: 'info'
+      # Keep-warm pings (optional). Fill each with the real Render base URL of that service so the
+      # job stops the free tier from sleeping; left empty here, an unset one is simply skipped.
+      # See .env.example for the full explanation.
+      HEALTH_PING_DRIVER_MANAGEMENT_URL: '${HEALTH_PING_DRIVER_MANAGEMENT_URL:-}'
+      HEALTH_PING_TRIP_PLANNING_MATCHING_URL: '${HEALTH_PING_TRIP_PLANNING_MATCHING_URL:-}'
+      HEALTH_PING_BOOKING_PRICING_URL: '${HEALTH_PING_BOOKING_PRICING_URL:-}'
+      HEALTH_PING_PAYMENTS_SETTLEMENT_URL: '${HEALTH_PING_PAYMENTS_SETTLEMENT_URL:-}'
+      HEALTH_PING_TRIP_EXECUTION_URL: '${HEALTH_PING_TRIP_EXECUTION_URL:-}'
+      HEALTH_PING_API_GATEWAY_URL: '${HEALTH_PING_API_GATEWAY_URL:-}'
     volumes:
       # The audit trail of the lookups has to survive a restart of the container.
       - panel-data:/app/data

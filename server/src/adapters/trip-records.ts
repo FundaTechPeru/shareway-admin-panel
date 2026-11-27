@@ -60,9 +60,10 @@ export interface TripRecordsPage {
 }
 
 /**
- * Trip Execution will serve these from its trip_records table as
- * GET /api/v1/admin/trip-records; until FEATURE_REAL_TRIP_RECORDS is turned on the screen and
- * the audit trail work against a seed of three finished trips.
+ * Trip Execution serves the trip records from GET /api/viajes/admin, reached through the gateway as
+ * GET /api/v1/trips/admin (the gateway rewrites /api/v1/trips -> /api/viajes). Until
+ * FEATURE_REAL_TRIP_RECORDS is turned on the screen and the audit trail work against a seed of
+ * three finished trips.
  */
 export interface TripRecordsAdapter {
   search(query: TripRecordQuery, token: string): Promise<TripRecordsPage>;
@@ -81,6 +82,13 @@ export function createTripRecordsAdapter(
     : new MockTripRecords();
 }
 
+/** Driver details composed from Driver Management for a trip record row. */
+interface DriverDetails {
+  name: string;
+  licenseNumber?: string;
+  vehicle: TripRecordVehicle;
+}
+
 export class GatewayTripRecords implements TripRecordsAdapter {
   constructor(private readonly gateway: GatewayClient) {}
 
@@ -88,17 +96,27 @@ export class GatewayTripRecords implements TripRecordsAdapter {
     query: TripRecordQuery,
     token: string,
   ): Promise<TripRecordsPage> {
+    // Trip Execution's admin endpoint filters by conductorId/pasajeroId (its own query handler),
+    // not by the panel's driverId/passengerId names, so they are mapped here.
     const search = new URLSearchParams();
-    for (const [name, value] of Object.entries(query)) {
-      if (value) {
-        search.set(name, value);
-      }
+    if (query.tripId) {
+      search.set('tripId', query.tripId);
     }
+    if (query.driverId) {
+      search.set('conductorId', query.driverId);
+    }
+    if (query.passengerId) {
+      search.set('pasajeroId', query.passengerId);
+    }
+    const qs = search.toString();
     const answer = await this.gateway.call({
-      path: `/api/v1/admin/trip-records?${search.toString()}`,
+      path: `/api/v1/trips/admin${qs ? `?${qs}` : ''}`,
       token,
     });
-    return {source: 'gateway', records: toRecords(answer.body)};
+    return {
+      source: 'gateway',
+      records: await this.enrichAll(answer.body, token),
+    };
   }
 
   async byId(
@@ -106,13 +124,68 @@ export class GatewayTripRecords implements TripRecordsAdapter {
     token: string,
   ): Promise<{source: AdapterSource; record?: TripRecord}> {
     const answer = await this.gateway.call({
-      path: `/api/v1/admin/trip-records/${encodeURIComponent(id)}`,
+      path: `/api/v1/trips/admin/${encodeURIComponent(id)}`,
       token,
     });
-    if (answer.status !== 200) {
+    if (answer.status !== 200 || !isRecord(answer.body)) {
       return {source: 'gateway', record: undefined};
     }
-    return {source: 'gateway', record: toRecords([answer.body])[0]};
+    const [record] = await this.enrichAll([answer.body], token);
+    return {source: 'gateway', record};
+  }
+
+  /**
+   * The admin endpoint returns only ids and the raw route; the driver's name and vehicle live in
+   * Driver Management. For each row this fills them from GET /api/v1/drivers/{id}/public-profile and
+   * GET /api/v1/drivers/{id}/vehicle, caching by driver so the same driver is fetched once. A failed
+   * lookup degrades to empty fields instead of failing the whole search.
+   */
+  private async enrichAll(body: unknown, token: string): Promise<TripRecord[]> {
+    const rows = toRows(body);
+    const cache = new Map<string, DriverDetails>();
+    const records: TripRecord[] = [];
+    for (const row of rows) {
+      const record = toRecord(row);
+      const driverId = record.driver.id;
+      if (driverId) {
+        const details =
+          cache.get(driverId) ?? (await this.lookupDriver(driverId, token));
+        cache.set(driverId, details);
+        record.driver.name = details.name;
+        record.driver.licenseNumber = details.licenseNumber;
+        record.vehicle = details.vehicle;
+      }
+      records.push(record);
+    }
+    return records;
+  }
+
+  private async lookupDriver(
+    driverId: string,
+    token: string,
+  ): Promise<DriverDetails> {
+    const id = encodeURIComponent(driverId);
+    const profile = await this.safeGet(
+      `/api/v1/drivers/${id}/public-profile`,
+      token,
+    );
+    const vehicle = await this.safeGet(`/api/v1/drivers/${id}/vehicle`, token);
+    return {
+      name: isRecord(profile) ? String(profile['fullName'] ?? '') : '',
+      licenseNumber: isRecord(profile)
+        ? text(profile['licenseNumber'])
+        : undefined,
+      vehicle: toVehicle(isRecord(vehicle) ? vehicle : {}),
+    };
+  }
+
+  private async safeGet(path: string, token: string): Promise<unknown> {
+    try {
+      const answer = await this.gateway.call({path, token});
+      return answer.status === 200 ? answer.body : undefined;
+    } catch {
+      return undefined;
+    }
   }
 }
 
@@ -326,57 +399,112 @@ const SEED: TripRecord[] = [
   },
 ];
 
-function toRecords(body: unknown): TripRecord[] {
+function toRows(body: unknown): Record<string, unknown>[] {
   const rows = Array.isArray(body)
     ? body
     : isRecord(body) && Array.isArray(body['content'])
       ? body['content']
       : [];
-  return rows.filter(isRecord).map(toRecord);
+  return rows.filter(isRecord);
 }
 
+/**
+ * Maps one raw /api/viajes/admin row to a TripRecord. The driver's name, license and vehicle are
+ * left empty here and filled by the adapter from Driver Management. The real route carries
+ * `Puntos` (Etiqueta/Latitud/Longitud/Tipo ORIGEN|PARADA|DESTINO), not panel-shaped stops, and the
+ * boarded passengers come from `Abordajes`. Fallbacks to the panel's own shape keep the mock and
+ * any future contract change parsing without throwing.
+ */
 function toRecord(row: Record<string, unknown>): TripRecord {
-  const driver = isRecord(row['driver']) ? row['driver'] : {};
-  const vehicle = isRecord(row['vehicle']) ? row['vehicle'] : {};
-  const route = isRecord(row['route']) ? row['route'] : {};
+  const route = isRecord(row['ruta'])
+    ? row['ruta']
+    : isRecord(row['route'])
+      ? row['route']
+      : {};
+  const points = asArray(route['puntos'] ?? row['stops']);
   return {
-    id: String(row['id'] ?? ''),
-    tripId: String(row['tripId'] ?? row['id'] ?? ''),
-    status: String(row['status'] ?? 'COMPLETED'),
-    closedAt: String(row['closedAt'] ?? row['createdAt'] ?? ''),
+    id: String(row['id'] ?? row['tripId'] ?? ''),
+    tripId: String(row['id'] ?? row['tripId'] ?? ''),
+    status: String(row['estado'] ?? row['status'] ?? ''),
+    closedAt: String(row['finReal'] ?? row['closedAt'] ?? ''),
     driver: {
-      id: String(driver['id'] ?? row['driverId'] ?? ''),
-      name: String(driver['name'] ?? driver['fullName'] ?? ''),
-      licenseNumber: text(driver['licenseNumber']),
+      id: String(row['conductorId'] ?? row['driverId'] ?? ''),
+      // Filled from GET /api/v1/drivers/{id}/public-profile by the adapter.
+      name: '',
+      licenseNumber: undefined,
     },
-    vehicle: {
-      plate: String(vehicle['plate'] ?? ''),
-      brand: String(vehicle['brand'] ?? ''),
-      model: String(vehicle['model'] ?? ''),
-      color: String(vehicle['color'] ?? ''),
-      seats: Number(vehicle['seats'] ?? 0),
-    },
+    // Filled from GET /api/v1/drivers/{id}/vehicle by the adapter.
+    vehicle: toVehicle({}),
     route: {
-      origin: String(route['origin'] ?? row['origin'] ?? ''),
-      destination: String(route['destination'] ?? row['destination'] ?? ''),
-      departedAt: String(route['departedAt'] ?? row['departedAt'] ?? ''),
-      arrivedAt: String(route['arrivedAt'] ?? row['arrivedAt'] ?? ''),
+      origin:
+        label(route['origen'] ?? route['origin']) || etiqueta(points, 'ORIGEN'),
+      destination:
+        label(route['destino'] ?? route['destination']) ||
+        etiqueta(points, 'DESTINO'),
+      departedAt: String(row['inicioReal'] ?? route['departedAt'] ?? ''),
+      arrivedAt: String(row['finReal'] ?? route['arrivedAt'] ?? ''),
     },
-    stops: asArray(row['stops']).map(stop => ({
-      name: String(stop['name'] ?? ''),
-      scheduledAt: String(stop['scheduledAt'] ?? ''),
-      arrivedAt: text(stop['arrivedAt']),
+    stops: points.map(point => ({
+      name: label(point) || String(point['name'] ?? ''),
+      scheduledAt: String(point['scheduledAt'] ?? ''),
+      // The real route has no per-stop arrival time; leave it empty rather than invent one.
+      arrivedAt: text(point['arrivedAt']),
     })),
-    passengers: asArray(row['passengers']).map(passenger => ({
-      passengerId: String(passenger['passengerId'] ?? passenger['id'] ?? ''),
-      name: String(passenger['name'] ?? passenger['fullName'] ?? ''),
-      stop: String(passenger['stop'] ?? ''),
-      boardedAt: String(passenger['boardedAt'] ?? ''),
-      validation: (passenger['validation'] === 'QR'
-        ? 'QR'
-        : 'PIN') as BoardingValidation,
-    })),
+    passengers: asArray(row['abordajes'] ?? row['passengers']).map(
+      passenger => ({
+        passengerId: String(
+          passenger['pasajeroId'] ??
+            passenger['passengerId'] ??
+            passenger['id'] ??
+            '',
+        ),
+        // TODO: Driver Management has no public passenger profile yet, so the name is left empty
+        // instead of invented; fill it once such an endpoint exists.
+        name: String(passenger['name'] ?? passenger['fullName'] ?? ''),
+        stop: String(passenger['stop'] ?? ''),
+        boardedAt: String(
+          passenger['abordadoEn'] ?? passenger['boardedAt'] ?? '',
+        ),
+        validation:
+          String(
+            passenger['metodo'] ?? passenger['validation'] ?? '',
+          ).toUpperCase() === 'QR'
+            ? 'QR'
+            : 'PIN',
+      }),
+    ),
   };
+}
+
+function toVehicle(vehicle: Record<string, unknown>): TripRecordVehicle {
+  return {
+    plate: String(vehicle['plate'] ?? ''),
+    brand: String(vehicle['brand'] ?? ''),
+    model: String(vehicle['model'] ?? ''),
+    color: String(vehicle['color'] ?? ''),
+    seats: Number(vehicle['seats'] ?? 0),
+  };
+}
+
+/** The label of a route point, whether it is a plain string or a {Etiqueta} object. */
+function label(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (isRecord(value)) {
+    return String(value['etiqueta'] ?? value['name'] ?? value['label'] ?? '');
+  }
+  return '';
+}
+
+/** The label of the first point of a given type (ORIGEN, DESTINO), if any. */
+function etiqueta(points: Record<string, unknown>[], type: string): string {
+  const point = points.find(
+    candidate =>
+      String(candidate['tipo'] ?? candidate['type'] ?? '').toUpperCase() ===
+      type,
+  );
+  return point ? label(point) : '';
 }
 
 function asArray(value: unknown): Record<string, unknown>[] {

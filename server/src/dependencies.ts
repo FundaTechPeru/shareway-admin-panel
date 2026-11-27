@@ -1,3 +1,4 @@
+import {createAlertsAdapter, type AlertsAdapter} from './adapters/alerts.js';
 import {
   createPendingDocumentsAdapter,
   type PendingDocumentsAdapter,
@@ -6,6 +7,10 @@ import {
   createTripRecordsAdapter,
   type TripRecordsAdapter,
 } from './adapters/trip-records.js';
+import {
+  createUserDirectoryAdapter,
+  type UserDirectoryAdapter,
+} from './adapters/users.js';
 import type {PanelConfig} from './config.js';
 import {
   SqliteAuditLogRepository,
@@ -21,6 +26,8 @@ export interface PanelDependencies {
   auditLog: AuditLogRepository;
   pendingDocuments: PendingDocumentsAdapter;
   tripRecords: TripRecordsAdapter;
+  users: UserDirectoryAdapter;
+  alerts: AlertsAdapter;
 }
 
 /**
@@ -43,5 +50,7 @@ export function createDependencies(
       createPendingDocumentsAdapter(config, gateway),
     tripRecords:
       overrides.tripRecords ?? createTripRecordsAdapter(config, gateway),
+    users: overrides.users ?? createUserDirectoryAdapter(gateway),
+    alerts: overrides.alerts ?? createAlertsAdapter(gateway),
   };
 }

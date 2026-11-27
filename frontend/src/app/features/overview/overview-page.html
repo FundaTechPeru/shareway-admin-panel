@@ -1,0 +1,75 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Panel</h1>
+    <p>
+      Resumen de la operación.
+      @if (services(); as summary) {
+        <span>Última consulta: {{ formatTime(summary.checkedAt) }}.</span>
+      }
+    </p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="loading()"
+    (click)="refresh()"
+  >
+    {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+  </button>
+</header>
+
+<div class="overview">
+  <a class="sw-card overview__card" routerLink="/servicios">
+    <span class="overview__label">Servicios operativos</span>
+    @if (services(); as summary) {
+      <strong class="overview__metric">
+        {{ summary.operational }} / {{ summary.total }}
+      </strong>
+      @if (summary.gatewayDown) {
+        <span class="sw-badge sw-badge--down">API Gateway caído</span>
+      } @else {
+        <span class="sw-muted">Según el circuito del API Gateway</span>
+      }
+    } @else if (servicesError()) {
+      <span class="sw-alert sw-alert--error">{{ servicesError() }}</span>
+    } @else {
+      <span class="sw-muted">Cargando…</span>
+    }
+  </a>
+
+  <a class="sw-card overview__card" routerLink="/conductores">
+    <span class="overview__label">Documentos por revisar</span>
+    @if (pendingDocuments() !== null) {
+      <strong class="overview__metric">{{ pendingDocuments() }}</strong>
+      <span class="sw-muted">Verificación de conductores</span>
+    } @else if (documentsError()) {
+      <span class="sw-alert sw-alert--error">{{ documentsError() }}</span>
+    } @else {
+      <span class="sw-muted">Cargando…</span>
+    }
+  </a>
+
+  <a class="sw-card overview__card" routerLink="/alertas">
+    <span class="overview__label">Alertas abiertas</span>
+    @if (openAlerts() !== null) {
+      <strong class="overview__metric">{{ openAlerts() }}</strong>
+      <span class="sw-muted">Emergencias por atender</span>
+    } @else if (alertsError()) {
+      <span class="sw-alert sw-alert--error">{{ alertsError() }}</span>
+    } @else {
+      <span class="sw-muted">Cargando…</span>
+    }
+  </a>
+
+  <a class="sw-card overview__card" routerLink="/liquidaciones">
+    <span class="overview__label">Liquidaciones pendientes</span>
+    @if (pendingSettlements() !== null) {
+      <strong class="overview__metric">{{ pendingSettlements() }}</strong>
+      <span class="sw-muted">Pagos a conductores por cerrar</span>
+    } @else if (settlementsError()) {
+      <span class="sw-alert sw-alert--error">{{ settlementsError() }}</span>
+    } @else {
+      <span class="sw-muted">Cargando…</span>
+    }
+  </a>
+</div>

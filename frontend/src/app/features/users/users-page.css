@@ -1,0 +1,29 @@
+.users__filters {
+  display: grid;
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.users__field {
+  margin-bottom: 0;
+}
+
+.users__pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 720px) {
+  .users__filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .users__pager {
+    justify-content: space-between;
+  }
+}

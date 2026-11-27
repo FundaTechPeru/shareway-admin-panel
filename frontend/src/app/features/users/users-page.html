@@ -1,0 +1,114 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Usuarios</h1>
+    <p>Directorio de las cuentas de la plataforma, según Gestión de conductores.</p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="loading()"
+    (click)="load()"
+  >
+    {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+  </button>
+</header>
+
+<div class="users__filters">
+  <div class="sw-field users__field">
+    <label for="users-role">Rol</label>
+    <select
+      id="users-role"
+      [value]="role()"
+      (change)="onRole($any($event.target).value)"
+    >
+      @for (option of roles; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="sw-field users__field">
+    <label for="users-name">Buscar por nombre</label>
+    <input
+      id="users-name"
+      type="search"
+      placeholder="Nombre o apellido"
+      [value]="name()"
+      (input)="onName($any($event.target).value)"
+    />
+  </div>
+  <div class="sw-field users__field">
+    <label for="users-email">Buscar por correo</label>
+    <input
+      id="users-email"
+      type="search"
+      placeholder="correo@ejemplo.pe"
+      [value]="email()"
+      (input)="onEmail($any($event.target).value)"
+    />
+  </div>
+</div>
+
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">{{ error() }}</p>
+}
+
+@if (users().length === 0 && !loading()) {
+  <p class="sw-empty">No hay usuarios que coincidan con la búsqueda.</p>
+} @else {
+  <table class="sw-card sw-table">
+    <thead>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Correo</th>
+        <th scope="col">Teléfono</th>
+        <th scope="col">Rol</th>
+        <th scope="col">Alta</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of users(); track user.id) {
+        <tr>
+          <td>{{ user.fullName || '—' }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone || '—' }}</td>
+          <td>
+            <span
+              class="sw-badge"
+              [class.sw-badge--ok]="user.role === 'ADMIN'"
+              [class.sw-badge--warn]="user.role === 'DRIVER'"
+              [class.sw-badge--idle]="user.role === 'PASSENGER'"
+            >
+              {{ roleLabel(user.role) }}
+            </span>
+          </td>
+          <td>{{ formatDate(user.createdAt) }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (result(); as directory) {
+    <div class="users__pager">
+      <button
+        class="sw-button sw-button--ghost sw-button--small"
+        type="button"
+        [disabled]="!hasPrevious() || loading()"
+        (click)="previous()"
+      >
+        Anterior
+      </button>
+      <span class="sw-muted">
+        Página {{ directory.page + 1 }} de {{ directory.totalPages || 1 }} ·
+        {{ directory.totalElements }} usuario(s)
+      </span>
+      <button
+        class="sw-button sw-button--ghost sw-button--small"
+        type="button"
+        [disabled]="!hasNext() || loading()"
+        (click)="next()"
+      >
+        Siguiente
+      </button>
+    </div>
+  }
+}

@@ -10,6 +10,7 @@ const SEARCH_LABELS: Record<AuditSearchType, string> = {
   DRIVER: 'Por conductor',
   PASSENGER: 'Por pasajero',
   TRIP_DETAIL: 'Detalle de viaje',
+  ALERT_ATTEND: 'Atención de alerta',
 };
 
 /**

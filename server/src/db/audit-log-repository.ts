@@ -1,7 +1,8 @@
 import type {PanelDatabase} from './database.js';
 
-/** What the admin searched by when the trip record was looked up. */
-export type AuditSearchType = 'TRIP' | 'DRIVER' | 'PASSENGER' | 'TRIP_DETAIL';
+/** What the admin searched by when the trip record was looked up, or the action they took. */
+export type AuditSearchType =
+  'TRIP' | 'DRIVER' | 'PASSENGER' | 'TRIP_DETAIL' | 'ALERT_ATTEND';
 
 /** One line of the audit trail: who looked up which trip record, when and under which ticket. */
 export interface AuditLogEntry {

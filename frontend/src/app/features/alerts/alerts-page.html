@@ -1,0 +1,187 @@
+<header class="sw-page-header">
+  <div>
+    <h1>Alertas</h1>
+    <p>Emergencias reportadas durante los viajes.</p>
+  </div>
+  <button
+    class="sw-button sw-button--ghost"
+    type="button"
+    [disabled]="loading()"
+    (click)="load()"
+  >
+    {{ loading() ? 'Actualizando…' : 'Actualizar' }}
+  </button>
+</header>
+
+<div class="alerts__filters" role="tablist" aria-label="Estado de las alertas">
+  <button
+    type="button"
+    class="alerts__filter"
+    [class.alerts__filter--active]="filter() === 'OPEN'"
+    (click)="changeFilter('OPEN')"
+  >
+    Abiertas
+  </button>
+  <button
+    type="button"
+    class="alerts__filter"
+    [class.alerts__filter--active]="filter() === 'ATTENDED'"
+    (click)="changeFilter('ATTENDED')"
+  >
+    Atendidas
+  </button>
+  <button
+    type="button"
+    class="alerts__filter"
+    [class.alerts__filter--active]="filter() === 'ALL'"
+    (click)="changeFilter('ALL')"
+  >
+    Todas
+  </button>
+</div>
+
+@if (notice()) {
+  <p class="sw-alert sw-alert--ok" role="status">{{ notice() }}</p>
+}
+@if (error()) {
+  <p class="sw-alert sw-alert--error" role="alert">
+    {{ error() }}
+    <button class="sw-button sw-button--ghost" type="button" (click)="load()">
+      Reintentar
+    </button>
+  </p>
+}
+
+<div class="alerts">
+  <section class="sw-card alerts__list" aria-label="Alertas">
+    @if (loading()) {
+      <p class="sw-muted alerts__loading">Cargando alertas…</p>
+    } @else if (alerts().length === 0) {
+      <p class="sw-empty">{{ emptyMessage() }}</p>
+    }
+    @for (alert of alerts(); track alert.id) {
+      <button
+        class="alerts__row"
+        type="button"
+        [class.alerts__row--active]="alert.id === selectedId()"
+        (click)="select(alert)"
+      >
+        <span class="alerts__type">{{ alert.type || 'Alerta' }}</span>
+        <span
+          class="sw-badge"
+          [class.sw-badge--down]="alert.status === 'OPEN'"
+          [class.sw-badge--idle]="alert.status === 'ATTENDED'"
+        >
+          {{ alert.status === 'OPEN' ? 'Abierta' : 'Atendida' }}
+        </span>
+        <span class="sw-muted alerts__desc">{{ alert.description }}</span>
+        <span class="sw-muted alerts__meta">
+          Viaje {{ shortId(alert.tripId) }} · {{ reporterLabel(alert) }}
+        </span>
+        <span class="sw-muted alerts__when">
+          {{ formatDateTime(alert.createdAt) }}
+        </span>
+      </button>
+    }
+  </section>
+
+  <section class="sw-card alerts__detail" aria-label="Alerta seleccionada">
+    @if (selected(); as alert) {
+      <div class="alerts__detail-head">
+        <h2>{{ alert.type || 'Alerta' }}</h2>
+        <span
+          class="sw-badge"
+          [class.sw-badge--down]="alert.status === 'OPEN'"
+          [class.sw-badge--idle]="alert.status === 'ATTENDED'"
+        >
+          {{ alert.status === 'OPEN' ? 'Abierta' : 'Atendida' }}
+        </span>
+      </div>
+
+      <dl class="alerts__data">
+        <dt>Descripción</dt>
+        <dd>{{ alert.description || '—' }}</dd>
+        <dt>Viaje</dt>
+        <dd class="alerts__trip">
+          <code>{{ shortId(alert.tripId) }}</code>
+          @if (alert.tripId) {
+            <button
+              class="sw-button sw-button--ghost alerts__copy"
+              type="button"
+              (click)="copyTrip(alert.tripId)"
+            >
+              {{ copied() === alert.tripId ? 'Copiado' : 'Copiar id' }}
+            </button>
+          }
+        </dd>
+        <dt>Reportante</dt>
+        <dd>{{ reporterLabel(alert) }}</dd>
+        <dt>Registrada</dt>
+        <dd>{{ formatDateTime(alert.createdAt) }}</dd>
+        @if (alert.attendedAt) {
+          <dt>Atendida</dt>
+          <dd>{{ formatDateTime(alert.attendedAt) }}</dd>
+        }
+      </dl>
+
+      @if (alert.status === 'OPEN') {
+        @if (confirming()) {
+          <p class="sw-muted">¿Marcar esta alerta como atendida?</p>
+          <div class="alerts__actions">
+            <button
+              class="sw-button"
+              type="button"
+              [disabled]="working()"
+              (click)="attend()"
+            >
+              Confirmar
+            </button>
+            <button
+              class="sw-button sw-button--ghost"
+              type="button"
+              [disabled]="working()"
+              (click)="cancelConfirm()"
+            >
+              Cancelar
+            </button>
+          </div>
+        } @else {
+          <div class="alerts__actions">
+            <button
+              class="sw-button"
+              type="button"
+              [disabled]="working()"
+              (click)="askConfirm()"
+            >
+              Marcar como atendida
+            </button>
+          </div>
+        }
+      }
+    } @else {
+      <p class="sw-empty">Elige una alerta de la lista para verla.</p>
+    }
+  </section>
+</div>
+
+@if (totalPages() > 1) {
+  <nav class="alerts__pager" aria-label="Paginación">
+    <button
+      class="sw-button sw-button--ghost"
+      type="button"
+      [disabled]="page() === 0 || loading()"
+      (click)="goTo(page() - 1)"
+    >
+      Anteriores
+    </button>
+    <span class="sw-muted">Página {{ page() + 1 }} de {{ totalPages() }}</span>
+    <button
+      class="sw-button sw-button--ghost"
+      type="button"
+      [disabled]="page() + 1 >= totalPages() || loading()"
+      (click)="goTo(page() + 1)"
+    >
+      Siguientes
+    </button>
+  </nav>
+}

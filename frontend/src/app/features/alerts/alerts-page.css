@@ -1,0 +1,151 @@
+.alerts__filters {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.alerts__filter {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-pill);
+  background: none;
+  font: inherit;
+  color: var(--sw-ink);
+  cursor: pointer;
+}
+
+.alerts__filter:hover {
+  background: var(--sw-soft);
+}
+
+.alerts__filter--active {
+  background: var(--sw-primary);
+  border-color: var(--sw-primary);
+  color: #fff;
+  font-weight: 500;
+}
+
+.alerts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.alerts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+}
+
+.alerts__loading {
+  padding: 12px;
+}
+
+.alerts__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  color: var(--sw-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.alerts__row:hover {
+  background: var(--sw-soft);
+}
+
+.alerts__row--active {
+  background: var(--sw-soft);
+  border-color: var(--sw-primary);
+}
+
+.alerts__type {
+  font-weight: 500;
+}
+
+.alerts__desc {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alerts__meta {
+  grid-column: 1 / -1;
+  font-size: 0.82rem;
+}
+
+.alerts__when {
+  grid-column: 1 / -1;
+  font-size: 0.82rem;
+}
+
+.alerts__detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.alerts__detail-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.alerts__data {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+}
+
+.alerts__data dt {
+  color: var(--sw-muted);
+  font-weight: 500;
+}
+
+.alerts__data dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.alerts__trip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alerts__copy {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 0.78rem;
+}
+
+.alerts__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.alerts__pager {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .alerts {
+    grid-template-columns: 1fr;
+  }
+}
